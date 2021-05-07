@@ -11,8 +11,8 @@
 #include <ESPAsyncWebServer.h>
 
 // Replace with your network credentials
-const char* ssid = "REPLACE_WITH_YOUR_SSID";
-const char* password = "REPLACE_WITH_YOUR_PASSWORD";
+const char* ssid = "maxipad";
+const char* password = "9165047812";
 
 bool ledState = 0;
 const int ledPin = 2;
@@ -100,6 +100,11 @@ const char index_html[] PROGMEM = R"rawliteral(
     <div class="card">
       <h2>Output - GPIO 2</h2>
       <p class="state">state: <span id="state">%STATE%</span></p>
+      <p><select name="onoff" id="onoffid">
+        <option value="on">On</option>
+        <option value="off">Off</option>
+        </select>
+      </p>
       <p><button id="button" class="button">Toggle</button></p>
     </div>
   </div>
@@ -137,10 +142,18 @@ const char index_html[] PROGMEM = R"rawliteral(
   }
   function initButton() {
     document.getElementById('button').addEventListener('click', toggle);
+    document.getElementById('onoffid').addEventListener('change', handleCombo, false);
   }
   function toggle(){
     websocket.send('toggle');
   }
+
+  function handleCombo() {
+    var x = document.getElementById("onoffid").value;
+    websocket.send(x);
+    
+  }
+
 </script>
 </body>
 </html>
@@ -156,6 +169,14 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
     data[len] = 0;
     if (strcmp((char*)data, "toggle") == 0) {
       ledState = !ledState;
+      notifyClients();
+    }
+    else if (strcmp((char*)data, "on") == 0) {
+      ledState = 1;
+      notifyClients();
+    }
+    else if (strcmp((char*)data, "off") == 0) {
+      ledState = 0;
       notifyClients();
     }
   }
